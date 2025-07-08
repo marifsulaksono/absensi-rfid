@@ -125,6 +125,7 @@
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let queue = [];
         let isModalShowing = false;
@@ -137,7 +138,7 @@
                 success: function (response) {
                     if (response.new_presence) {
                         queue.push(response);
-                        processQueue();
+                        processQueue(); // selalu coba proses antrian setelah push
                     }
                 },
                 error: function (xhr, status, error) {
@@ -149,31 +150,39 @@
         function processQueue() {
             if (isModalShowing || queue.length === 0) return;
 
-            let data = queue.shift();
+            const data = queue.shift(); // Ambil item pertama dari antrian
             isModalShowing = true;
 
             $("#modalStudentName").text(data.student);
             $("#modalMessage").text(data.message);
             $("#presenceModal").modal("show");
 
+            // Tentukan durasi modal: 5 detik jika queue kosong (hanya 1 data), 3 detik jika masih ada antrian
+            const modalDuration = (queue.length === 0) ? 5000 : 3000;
+
             setTimeout(function () {
                 $("#presenceModal").modal("hide");
                 isModalShowing = false;
+
+                // Proses data berikutnya setelah modal ditutup
                 processQueue();
-            }, 3000);
+            }, modalDuration);
         }
 
-        setInterval(checkLatestPresence, 150000);
+        // Polling setiap 0.5 detik untuk ambil data presensi terbaru
+        function pollPresence() {
+            checkLatestPresence();
+            setTimeout(pollPresence, 500); // rekursif agar tidak overlap seperti setInterval
+        }
+        pollPresence();
 
+        // Refresh tabel setiap 5 detik jika tidak ada modal yang aktif
         setInterval(function () {
-            if (queue.length === 0 && !isModalShowing) {
+            if (!isModalShowing && queue.length === 0) {
                 $("#absensiTable").load(location.href + " #absensiTable>*", "");
             }
         }, 5000);
-
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
