@@ -12,7 +12,7 @@ class PresensiModel extends Model
 
     protected $table = 'presents';
 
-    protected $fillable = ['id_student', 'date', 'in', 'out', 'is_displayed'];
+    protected $fillable = ['id_student', 'date', 'in', 'out', 'is_displayed', 'tool_id'];
 
     public function student()
     {

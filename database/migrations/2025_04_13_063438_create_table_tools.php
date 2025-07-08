@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rfids', function (Blueprint $table) {
+        Schema::create('tools', function (Blueprint $table) {
             $table->id();
-            $table->string('number', 100)->unique();
-            $table->uuid('id_student');
-            $table->foreign('id_student')->references('id')->on('students')->onDelete('cascade');
-            $table->boolean('is_active')->default(true);
+            $table->string('code', 20)->unique();
+            $table->string('name', 255);
+            $table->text('description')->nullable();
+            $table->integer('status')->default(0)->comment('0 = not active, 1 = used for scan new rfid (data will be stored in temp rfid table), 2 = used for scan present');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rfids');
+        Schema::dropIfExists('tools');
     }
 };
