@@ -53,7 +53,11 @@ class PresensiController extends Controller
 
         return response()->json([
             'new_presence' => true,
-            'student' => $latestPresence->student->name,
+            'student_name' => $latestPresence->student->name,
+            'student_class' => $latestPresence->student->class->name,
+            'student_address' => $latestPresence->student->address,
+            'student_nis' => $latestPresence->student->nis,
+            'student_photo' => $latestPresence->student->photo,
             'status' => $status,
             'message' => $message,
         ]);
@@ -61,7 +65,6 @@ class PresensiController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Received RFID Present request:', $request->all());
         $apikey = env('API_KEY');
 
         // Validasi request
@@ -70,12 +73,10 @@ class PresensiController extends Controller
             'tool_code' => 'required|string'
         ]);
 
-        // validation API Key
+        // Validasi API Key
         $apikeyHeaderValue = $request->header('x-api-key');
         if ($apikeyHeaderValue != $apikey) {
-            return response()->json([
-                'error' => 'Invalid API key'
-            ]);
+            return response()->json(['error' => 'Invalid API key']);
         }
 
         $tool = Tools::where('code', $request->tool_code)->first();
@@ -91,38 +92,56 @@ class PresensiController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Cari RFID di database
+        // Cari siswa berdasarkan nomor RFID
         $student = Student::where('rfid_number', $request->number)
-                ->where('is_active', 1)
-                ->first();
+            ->where('is_active', 1)
+            ->first();
         if (!$student) {
             return response()->json(['error' => 'Siswa tidak ditemukan atau tidak aktif'], 404);
         }
 
-        $today = Carbon::now()->format('Y-m-d');
-        $currentTime = Carbon::now()->format('H:i:s');
+        $now = Carbon::now();
+        $today = $now->format('Y-m-d');
+        $currentTime = $now->format('H:i:s');
 
-        // Cek apakah sudah ada data presents untuk id_student di hari ini
-        $present = PresensiModel::where('id_student', $student->id)->where('date', $today)->first();
+        // Cek apakah siswa sudah absen hari ini
+        $present = PresensiModel::where('id_student', $student->id)
+            ->where('date', $today)
+            ->first();
+
+        // Jam batas masuk: 05:00 - 08:00
+        $startIn = Carbon::createFromTime(5, 0, 0);
+        $endIn = Carbon::createFromTime(8, 0, 0);
+
+        // Jam batas keluar: di atas 09:00
+        $minOut = Carbon::createFromTime(9, 0, 0);
 
         if (!$present) {
-            // Jika belum ada, insert data baru
-            PresensiModel::create([
-                'id_student' => $student->id,
-                'date' => $today,
-                'in' => $currentTime,
-                'out' => null,
-                'is_displayed' => false,
-                'tool_id' => $tool->id
-            ]);
+            // Absensi masuk
+            // if ($now->between($startIn, $endIn)) {
+                // Jika dalam range jam masuk, insert
+                PresensiModel::create([
+                    'id_student' => $student->id,
+                    'date' => $today,
+                    'in' => $currentTime,
+                    'out' => null,
+                    'is_displayed' => false,
+                    'tool_id' => $tool->id
+                ]);
+            // } else {
+            //     return response()->json(['error' => 'Waktu absensi masuk hanya antara jam 05:00 - 08:00'], 400);
+            // }
         } else if ($present->out === null) {
-            // Jika sudah ada dan kolom 'out' masih kosong, update kolom 'out' dengan waktu sekarang
-            $present->update([
-                'out' => $currentTime,
-                'is_displayed' => false
-            ]);
+            // Absensi keluar
+            if ($now->gt($minOut)) {
+                $present->update([
+                    'out' => $currentTime,
+                    'is_displayed' => false
+                ]);
+            } else {
+                return response()->json(['error' => 'Waktu absensi pulang hanya setelah jam 09:00'], 400);
+            }
         } else {
-            // Jika sudah ada dan kolom 'out' sudah terisi, kirim pesan error
             return response()->json(['200' => 'Kamu sudah melakukan absensi hari ini'], 200);
         }
 
@@ -137,4 +156,5 @@ class PresensiController extends Controller
             ]
         ], 201);
     }
+
 }
