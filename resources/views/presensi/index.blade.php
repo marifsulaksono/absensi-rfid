@@ -15,7 +15,7 @@
         }
 
         .left-panel {
-            background-color: #0d6efd;
+            background-color: #4DA8DA;
             color: white;
             padding: 2rem;
             display: flex;
@@ -58,7 +58,7 @@
     <div class="d-flex h-100 position-relative">
         <!-- KIRI -->
         <div class="left-panel col-md-3 position-relative">
-            <img src="https://e7.pngegg.com/pngimages/183/248/png-clipart-access-control-radio-frequency-identification-television-pensiunea-mioval-technology-rfid-card-logo-transmitter.png"
+            <img src="{{ asset('images/rfid-logo.png') }}"
                 alt="RFID" class="image-header mb-4">
             <h1 class="text-left">Sistem Manajemen Absensi Digital</h1>
             <img src="{{ asset('images/logo-footer.svg') }}" alt="" class="image-footer">
@@ -106,22 +106,32 @@
 
     <!-- Modal -->
     <div class="modal fade" id="presenceModal" tabindex="-1" aria-labelledby="presenceModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8PHLObjAV3hG5ZU7QfJZi0dNa27raOWpegQ&s"
-                        width="40">
-                    <h5 class="modal-title ms-2" id="presenceModalLabel">Riwayat Kehadiran</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-2 border-primary">
+                <div class="modal-header bg-primary text-white py-2">
+                    <h5 class="modal-title" id="presenceModalLabel">Data Siswa</h5>
                 </div>
-                <div class="modal-body">
-                    <h2 id="modalMessage"></h2>
-                    <h3 id="modalStudentName"></h3>
+
+                <div class="modal-body p-4 d-flex align-items-center" style="min-height: 200px;">
+                    <div class="d-flex w-100">
+                        <!-- Foto -->
+                        <div class="me-4">
+                            <img id="modalPhoto" src="{{ asset('images/photo.jpg') }}" alt="Foto Siswa" width="100" height="120" class="border rounded">
+                        </div>
+
+                        <!-- Informasi Siswa -->
+                        <div class="flex-grow-1">
+                            <p class="mb-1"><strong>Nama:</strong> <span id="modalStudentName">-</span></p>
+                            <p class="mb-1"><strong>Kelas:</strong> <span id="modalStudentClass">-</span></p>
+                            <p class="mb-1"><strong>Alamat:</strong> <span id="modalStudentAddress">-</span></p>
+                            <p class="mb-1"><strong>NIS:</strong> <span id="modalStudentID">-</span></p>
+                            <p class="mb-0 text-primary fw-bold" id="modalMessage">-</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -153,7 +163,11 @@
             const data = queue.shift(); // Ambil item pertama dari antrian
             isModalShowing = true;
 
-            $("#modalStudentName").text(data.student);
+            $("#modalStudentName").text(data.student_name);
+            $("#modalStudentClass").text(data.student_class);
+            $("#modalStudentAddress").text(data.student_address);
+            $("#modalStudentID").text(data.student_nis);
+            $("#modalStudentPhoto").text(data.student_photo);
             $("#modalMessage").text(data.message);
             $("#presenceModal").modal("show");
 
@@ -169,10 +183,10 @@
             }, modalDuration);
         }
 
-        // Polling setiap 0.5 detik untuk ambil data presensi terbaru
+        // Polling setiap 1 detik untuk ambil data presensi terbaru
         function pollPresence() {
             checkLatestPresence();
-            setTimeout(pollPresence, 500); // rekursif agar tidak overlap seperti setInterval
+            setTimeout(pollPresence, 1000); // rekursif agar tidak overlap seperti setInterval
         }
         pollPresence();
 
