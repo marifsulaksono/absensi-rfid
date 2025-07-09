@@ -116,7 +116,7 @@
                     <div class="d-flex w-100">
                         <!-- Foto -->
                         <div class="me-4">
-                            <img id="modalPhoto" src="{{ asset('images/photo.jpg') }}" alt="Foto Siswa" width="100" height="120" class="border rounded">
+                            <img id="modalStudentPhoto" src="" onerror="this.src='{{ asset('images/photo.jpg') }}'" width="100" height="120">
                         </div>
 
                         <!-- Informasi Siswa -->
@@ -167,7 +167,7 @@
             $("#modalStudentClass").text(data.student_class);
             $("#modalStudentAddress").text(data.student_address);
             $("#modalStudentID").text(data.student_nis);
-            $("#modalStudentPhoto").text(data.student_photo);
+            $("#modalStudentPhoto").attr("src", data.student_photo);
             $("#modalMessage").text(data.message);
             $("#presenceModal").modal("show");
 

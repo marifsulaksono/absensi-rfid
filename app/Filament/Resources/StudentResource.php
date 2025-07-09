@@ -72,7 +72,12 @@ class StudentResource extends Resource
                                     ->modalSubmitAction(false)
                                     ->modalCancelActionLabel('Tutup')
                                 ),
-                        FileUpload::make('photo')->label('Foto'),
+                        FileUpload::make('photo')
+                            ->label('Foto')
+                            ->image()
+                            ->disk('public')
+                            ->directory('uploads/photos')
+                            ->visibility('public'),
                         Toggle::make('is_active')->label('Aktif')->default(true),
                     ])
                     ->columns(2),
@@ -88,7 +93,12 @@ class StudentResource extends Resource
                 TextColumn::make('address')->label('Alamat')->searchable(),
                 TextColumn::make('class.name')->label('Kelas')->sortable(),
                 TextColumn::make('birthday')->label('Tanggal Lahir'),
-                ImageColumn::make('photo')->label('Foto'),
+                ImageColumn::make('photo')
+                    ->label('Foto')
+                    ->disk('public')        
+                    ->visibility('public')  
+                    ->size(50)              
+                    ->circular(),
             ])
             ->filters([
                 //

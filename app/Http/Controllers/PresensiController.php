@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\PresensiModel;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class PresensiController extends Controller
 {
@@ -57,7 +58,9 @@ class PresensiController extends Controller
             'student_class' => $latestPresence->student->class->name,
             'student_address' => $latestPresence->student->address,
             'student_nis' => $latestPresence->student->nis,
-            'student_photo' => $latestPresence->student->photo,
+            'student_photo' => $latestPresence->student->photo
+                ? url(Storage::url($latestPresence->student->photo))
+                : asset('images/photo.jpg'),
             'status' => $status,
             'message' => $message,
         ]);
@@ -118,7 +121,7 @@ class PresensiController extends Controller
 
         if (!$present) {
             // Absensi masuk
-            // if ($now->between($startIn, $endIn)) {
+            if ($now->between($startIn, $endIn)) {
                 // Jika dalam range jam masuk, insert
                 PresensiModel::create([
                     'id_student' => $student->id,
@@ -128,9 +131,9 @@ class PresensiController extends Controller
                     'is_displayed' => false,
                     'tool_id' => $tool->id
                 ]);
-            // } else {
-            //     return response()->json(['error' => 'Waktu absensi masuk hanya antara jam 05:00 - 08:00'], 400);
-            // }
+            } else {
+                return response()->json(['error' => 'Waktu absensi masuk hanya antara jam 05:00 - 08:00'], 400);
+            }
         } else if ($present->out === null) {
             // Absensi keluar
             if ($now->gt($minOut)) {
