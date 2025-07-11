@@ -137,12 +137,16 @@ class PresensiController extends Controller
         } else if ($present->out === null) {
             // Absensi keluar
             if ($now->gt($minOut)) {
+                // Absensi keluar valid
                 $present->update([
                     'out' => $currentTime,
                     'is_displayed' => false
                 ]);
             } else {
-                return response()->json(['error' => 'Waktu absensi pulang hanya setelah jam 09:00'], 400);
+                // Cegah absensi keluar sebelum jam 09:00
+                return response()->json([
+                    'message' => 'Kamu sudah absen masuk. Absensi pulang hanya bisa dilakukan setelah jam 09:00.'
+                ], 200);
             }
         } else {
             return response()->json(['200' => 'Kamu sudah melakukan absensi hari ini'], 200);
