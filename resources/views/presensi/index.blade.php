@@ -82,17 +82,19 @@
                     <thead>
                         <tr class="text-center">
                             <th width="5%">No</th>
-                            <th width="35%">Nama</th>
-                            <th width="20%">Tanggal</th>
-                            <th width="20%">Jam Masuk</th>
-                            <th width="20%">Jam Pulang</th>
+                            <th width="40%">Nama</th>
+                            <th width="10%">Kelas</th>
+                            <th width="15%">Tanggal</th>
+                            <th width="10%">Jam Masuk</th>
+                            <th width="10%">Jam Pulang</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($absensi as $data)
-                        <tr>
+                        <tr class="text-center">
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $data->student->name ?? 'Unknown' }}</td>
+                            <td>{{ $data->student->class->name ?? 'Unknown' }}</td>
                             <td>{{ $data->date }}</td>
                             <td>{{ $data->in }}</td>
                             <td>{{ $data->out }}</td>

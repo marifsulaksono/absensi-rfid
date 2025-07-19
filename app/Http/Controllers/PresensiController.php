@@ -121,7 +121,7 @@ class PresensiController extends Controller
 
         if (!$present) {
             // Absensi masuk
-            if ($now->between($startIn, $endIn)) {
+            // if ($now->between($startIn, $endIn)) {
                 // Jika dalam range jam masuk, insert
                 PresensiModel::create([
                     'id_student' => $student->id,
@@ -131,9 +131,9 @@ class PresensiController extends Controller
                     'is_displayed' => false,
                     'tool_id' => $tool->id
                 ]);
-            } else {
-                return response()->json(['error' => 'Waktu absensi masuk hanya antara jam 05:00 - 08:00'], 400);
-            }
+            // } else {
+            //     return response()->json(['error' => 'Waktu absensi masuk hanya antara jam 05:00 - 08:00'], 400);
+            // }
         } else if ($present->out === null) {
             // Absensi keluar
             if ($now->gt($minOut)) {
