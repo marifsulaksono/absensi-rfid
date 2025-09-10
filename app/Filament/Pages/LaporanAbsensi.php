@@ -56,6 +56,24 @@ class LaporanAbsensi extends Page implements HasTable
                         ->when($data['start_date'] ?? null, fn ($q, $start) => $q->whereDate('date', '>=', $start))
                         ->when($data['end_date'] ?? null, fn ($q, $end) => $q->whereDate('date', '<=', $end));
                 }),
+            SelectFilter::make('class_id')
+                ->label('Kelas')
+                ->options(fn () => \App\Models\ClassModel::pluck('name', 'id')->toArray())
+                ->query(function (Builder $query, $state) {
+                    if ($state) {
+                        $query->whereHas('student', fn ($q) => $q->where('class_id', $state));
+                    }
+                    return $query;
+                }),
+            SelectFilter::make('student_id')
+                ->label('Siswa')
+                ->options(fn () => \App\Models\Student::pluck('name', 'id')->toArray())
+                ->query(function (Builder $query, $state) {
+                    if ($state) {
+                        $query->where('id_student', $state);
+                    }
+                    return $query;
+                }),
         ];
     }
 
@@ -93,13 +111,15 @@ class LaporanAbsensi extends Page implements HasTable
 
     public function exportData()
     {
-        $filters = $this->tableFilters['date_range'] ?? [];
+        $dateFilters = $this->tableFilters['date_range'] ?? [];
+        $classId = $this->tableFilters['class_id'] ?? null;
+        $studentId = $this->tableFilters['student_id'] ?? null;
 
-        $startDate = $filters['start_date'] ?? null;
-        $endDate = $filters['end_date'] ?? null;
+        $startDate = $dateFilters['start_date'] ?? null;
+        $endDate = $dateFilters['end_date'] ?? null;
 
         return Excel::download(
-            new PresensiExport($startDate, $endDate),
+            new PresensiExport($startDate, $endDate, $classId, $studentId),
             'Laporan_Presensi_' . now()->format('Y-m-d') . '.xlsx'
         );
     }
