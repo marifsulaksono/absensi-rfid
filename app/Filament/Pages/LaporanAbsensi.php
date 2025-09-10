@@ -56,21 +56,29 @@ class LaporanAbsensi extends Page implements HasTable
                         ->when($data['start_date'] ?? null, fn ($q, $start) => $q->whereDate('date', '>=', $start))
                         ->when($data['end_date'] ?? null, fn ($q, $end) => $q->whereDate('date', '<=', $end));
                 }),
-            SelectFilter::make('class_id')
-                ->label('Kelas')
-                ->options(fn () => \App\Models\ClassModel::pluck('name', 'id')->toArray())
-                ->query(function (Builder $query, $state) {
-                    if ($state) {
-                        $query->whereHas('student', fn ($q) => $q->where('class_id', $state));
+            Filter::make('class_id')
+                ->form([
+                    \Filament\Forms\Components\Select::make('class_id')
+                        ->label('Kelas')
+                        ->options(fn () => \App\Models\ClassModel::pluck('name', 'id')->toArray())
+                        ->searchable()
+                ])
+                ->query(function (Builder $query, array $data) {
+                    if (!empty($data['class_id'])) {
+                        $query->whereHas('student', fn ($q) => $q->where('class_id', $data['class_id']));
                     }
                     return $query;
                 }),
-            SelectFilter::make('student_id')
-                ->label('Siswa')
-                ->options(fn () => \App\Models\Student::pluck('name', 'id')->toArray())
-                ->query(function (Builder $query, $state) {
-                    if ($state) {
-                        $query->where('id_student', $state);
+            Filter::make('student_id')
+                ->form([
+                    \Filament\Forms\Components\Select::make('student_id')
+                        ->label('Siswa')
+                        ->options(fn () => \App\Models\Student::pluck('name', 'id')->toArray())
+                        ->searchable()
+                ])
+                ->query(function (Builder $query, array $data) {
+                    if (!empty($data['student_id'])) {
+                        $query->where('id_student', $data['student_id']);
                     }
                     return $query;
                 }),
