@@ -37,6 +37,7 @@ class LaporanAbsensi extends Page implements HasTable
     {
         return [
             TextColumn::make('student.name')->label('Nama Siswa')->searchable(),
+            TextColumn::make('student.class.name')->label('Kelas')->searchable(),
             TextColumn::make('date')->label('Tanggal')->date(),
             TextColumn::make('in')->label('Jam Masuk')->time(),
             TextColumn::make('out')->label('Jam Pulang')->time(),
