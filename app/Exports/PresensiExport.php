@@ -24,7 +24,7 @@ class PresensiExport implements FromCollection, WithHeadings
 
     public function collection(): Collection
     {
-        return PresensiModel::with('student')
+        return PresensiModel::with(['student.class'])
             ->when($this->startDate, fn($q) => $q->whereDate('date', '>=', $this->startDate))
             ->when($this->endDate, fn($q) => $q->whereDate('date', '<=', $this->endDate))
             ->when($this->classId, fn($q) => $q->whereHas('student', fn($sq) => $sq->where('class_id', $this->classId)))
@@ -33,6 +33,7 @@ class PresensiExport implements FromCollection, WithHeadings
             ->map(function ($row) {
                 return [
                     'Nama Siswa' => $row->student->name ?? 'Tidak Ada Nama',
+                    'Kelas' => $row->student->class->name ?? '-',
                     'Tanggal' => $row->date,
                     'Jam Masuk' => $row->in,
                     'Jam Pulang' => $row->out,
@@ -42,6 +43,6 @@ class PresensiExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ['Nama Siswa', 'Tanggal', 'Jam Masuk', 'Jam Pulang'];
+        return ['Nama Siswa', 'Kelas', 'Tanggal', 'Jam Masuk', 'Jam Pulang'];
     }
 }
