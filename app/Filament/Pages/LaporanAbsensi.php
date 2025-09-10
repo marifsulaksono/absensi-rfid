@@ -97,38 +97,52 @@ class LaporanAbsensi extends Page implements HasTable
         ];
     }
 
-    // public function exportData()
-    // {
-    //     return Response::streamDownload(function () {
-    //         $handle = fopen('php://output', 'w');
-    //         fputcsv($handle, ['Nama Siswa', 'Tanggal', 'Jam Masuk', 'Jam Pulang']);
-
-    //         $data = PresensiModel::with('student')->get();
-
-    //         foreach ($data as $row) {
-    //             fputcsv($handle, [
-    //                 $row->student->name ?? 'Tidak Ada Nama',
-    //                 $row->date,
-    //                 $row->in,
-    //                 $row->out
-    //             ]);
-    //         }
-
-    //         fclose($handle);
-    //     }, 'Laporan_Presensi_' . now()->format('Y-m-d') . '.csv');
-    // }
-
     public function exportData()
     {
-        $dateFilters = $this->tableFilters['date_range'] ?? [];
-        $classId = $this->tableFilters['class_id'] ?? null;
-        $studentId = $this->tableFilters['student_id'] ?? null;
+        $filters = $this->tableFilters ?? [];
+        $query = $this->getTableQuery();
 
-        $startDate = $dateFilters['start_date'] ?? null;
-        $endDate = $dateFilters['end_date'] ?? null;
+        // Terapkan filter manual
+        if (!empty($filters['date_range']['start_date'])) {
+            $query->whereDate('date', '>=', $filters['date_range']['start_date']);
+        }
+        if (!empty($filters['date_range']['end_date'])) {
+            $query->whereDate('date', '<=', $filters['date_range']['end_date']);
+        }
+        if (!empty($filters['class_id']['class_id'])) {
+            $query->whereHas('student', function ($q) use ($filters) {
+                $q->where('class_id', $filters['class_id']['class_id']);
+            });
+        }
+        if (!empty($filters['student_id']['student_id'])) {
+            $query->where('id_student', $filters['student_id']['student_id']);
+        }
+
+        $data = $query->get();
+
+        // Mapping data untuk export
+        $exportData = $data->map(function ($row) {
+            return [
+                'Nama Siswa' => $row->student->name ?? 'Tidak Ada Nama',
+                'Kelas' => $row->student->class->name ?? '-',
+                'Tanggal' => $row->date,
+                'Jam Masuk' => $row->in,
+                'Jam Pulang' => $row->out,
+            ];
+        });
+
+        // Buat export custom
+        $export = new class($exportData) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
+            protected $data;
+            public function __construct($data) { $this->data = $data; }
+            public function collection() { return $this->data; }
+            public function headings(): array {
+                return ['Nama Siswa', 'Kelas', 'Tanggal', 'Jam Masuk', 'Jam Pulang'];
+            }
+        };
 
         return Excel::download(
-            new PresensiExport($startDate, $endDate, $classId, $studentId),
+            $export,
             'Laporan_Presensi_' . now()->format('Y-m-d') . '.xlsx'
         );
     }
