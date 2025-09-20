@@ -80,7 +80,14 @@ class ToolResource extends Resource
                     }),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        0 => 'Tidak Aktif',
+                        1 => 'Scan RFID Baru',
+                        2 => 'Scan Presensi',
+                    ])
+                    ->multiple()
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

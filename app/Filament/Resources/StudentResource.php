@@ -142,7 +142,11 @@ class StudentResource extends Resource
                     ->grow(false),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('class_id')
+                    ->label('Kelas')
+                    ->options(ClassModel::all()->pluck('name', 'id'))
+                    ->multiple()
+                    ->preload()
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
