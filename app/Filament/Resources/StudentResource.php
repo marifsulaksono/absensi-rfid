@@ -146,7 +146,17 @@ class StudentResource extends Resource
                     ->label('Kelas')
                     ->options(ClassModel::all()->pluck('name', 'id'))
                     ->multiple()
-                    ->preload()
+                    ->preload(),
+                
+                Tables\Filters\TernaryFilter::make('photo')
+                    ->label('Foto')
+                    ->placeholder('Semua')
+                    ->trueLabel('Memiliki Foto')
+                    ->falseLabel('Belum Ada Foto')
+                    ->queries(
+                        true: fn ($query) => $query->whereNotNull('photo'),
+                        false: fn ($query) => $query->whereNull('photo'),
+                    )
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
