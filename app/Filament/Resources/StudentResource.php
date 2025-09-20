@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Imports\StudentImport;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class StudentResource extends Resource
 {
@@ -81,8 +82,18 @@ class StudentResource extends Resource
                             ->label('Foto')
                             ->image()
                             ->disk('public')
-                            ->directory('uploads/photos')
-                            ->visibility('public'),
+                            ->directory('photos')
+                            ->visibility('public')
+                            ->maxSize(1024)
+                            ->imageEditor()                // aktifkan image editor
+                            ->imageEditorAspectRatios([    // user bisa pilih crop
+                                '1:1',                     // square
+                                '4:3',
+                                '16:9',
+                                null,                      // bebas
+                            ])
+                            ->imageEditorMode(2)           // 1: crop saja, 2: crop + resize
+                            ->panelLayout('compact'), // lebih ringan dari 'integrated'
                         Toggle::make('is_active')->label('Aktif')->default(true),
                     ])
                     ->columns(2),
