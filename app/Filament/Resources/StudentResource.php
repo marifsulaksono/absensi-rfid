@@ -47,7 +47,12 @@ class StudentResource extends Resource
             ->schema([
                 Card::make()
                     ->schema([
-                        TextInput::make('nis')->label('Nomor Induk Siswa')->required()->unique(ignorable: fn($record) => $record),
+                        TextInput::make('nis')
+                            ->label('Nomor Induk Siswa')
+                            ->required()
+                            ->unique(Student::class, modifyRuleUsing: function ($rule) {
+                                return $rule->whereNull('deleted_at');
+                            }, ignorable: fn($record) => $record),
                         TextInput::make('name')->label('Nama Lengkap')->required(),
                         Textarea::make('address')->label('Alamat')->required(),
                         Select::make('class_id')
@@ -60,7 +65,9 @@ class StudentResource extends Resource
                         TextInput::make('email')->label('Email'),
                         TextInput::make('rfid_number')
                             ->label('Nomor RFID')
-                            ->unique(ignorable: fn($record) => $record)
+                            ->unique(Student::class, modifyRuleUsing: function ($rule) {
+                                return $rule->whereNull('deleted_at');
+                            }, ignorable: fn($record) => $record)
                             // ->required()
                             ->readonly()
                             ->suffixAction(
@@ -104,17 +111,35 @@ class StudentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nis')->label('Nomor Induk Siswa')->sortable()->searchable(),
-                TextColumn::make('name')->label('Nama Lengkap')->sortable()->searchable(),
-                TextColumn::make('address')->label('Alamat')->searchable(),
-                TextColumn::make('class.name')->label('Kelas')->sortable(),
-                TextColumn::make('birthday')->label('Tanggal Lahir'),
+                TextColumn::make('nis')
+                    ->label('Nomor Induk Siswa')
+                    ->sortable()
+                    ->searchable()
+                    ->grow(false),
+                TextColumn::make('name')
+                    ->label('Nama Lengkap')
+                    ->sortable()
+                    ->searchable()
+                    ->grow(true),
+                TextColumn::make('address')
+                    ->label('Alamat')
+                    ->searchable()
+                    ->grow(true)
+                    ->wrap(),
+                TextColumn::make('class.name')
+                    ->label('Kelas')
+                    ->sortable()
+                    ->grow(false),
+                TextColumn::make('birthday')
+                    ->label('Tanggal Lahir')
+                    ->grow(false),
                 ImageColumn::make('photo')
                     ->label('Foto')
                     ->disk('public')        
                     ->visibility('public')  
                     ->size(50)              
-                    ->circular(),
+                    ->circular()
+                    ->grow(false),
             ])
             ->filters([
                 //
